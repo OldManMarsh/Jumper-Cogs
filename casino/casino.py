@@ -31,7 +31,7 @@ except ImportError:
 # Default settings that is created when a server begin's using Casino
 server_default = {"System Config": {"Casino Name": "Redjumpman", "Casino Open": True,
                                     "Chip Name": "Jump", "Chip Rate": 1, "Default Payday": 100,
-                                    "Payday Timer": 1200, "Threshold Switch": False,
+                                    "Payday Timer": 1200, "Threshold Switch": False, "Log Stats": False,
                                     "Threshold": 10000, "Credit Rate": 1, "Version": 1.56
                                     },
                   "Memberships": {},
@@ -50,7 +50,8 @@ server_default = {"System Config": {"Casino Name": "Redjumpman", "Casino Open": 
                                       "Min": 20, "Max": 20, "Access Level": 0},
                             "War": {"Multiplier": 1.5, "Cooldown": 5, "Open": True,
                                     "Min": 20, "Max": 20, "Access Level": 0},
-                            }
+                            },
+                  "Game Stats":{}
                   }
 
 new_user = {"Chips": 100,
@@ -64,6 +65,17 @@ new_user = {"Chips": 100,
                           "Blackjack": 0, "Payday": 0}
             }
 
+''' NOTE(Marsh)
+Currently used to reset stats for the dice game stats whenever the cog updates to a new version. 
+Trying to keep it general, so anything can be added.
+Since both Hi-Lo and Dice uses 2d6, it'll map both to Two Dice games. The stat keeping is to find possible RNG errors.
+Debating using the update version to check every stat update or do something to automatically zero everything every time Casino is updated.
+'''
+game_stats_default = {"Game Stats": {"Stats For Version": 0, 
+                            "2d6 Games":{"Games Played": 0, "2s Rolled": 0, "3s Rolled": 0 "4s Rolled": 0,
+                                          "5s Rolled": 0, "6s Rolled": 0, "7s Rolled": 0, "8s Rolled": 0,
+                                          "9s Rolled": 0, "10s Rolled": 0, "11s Rolled": 0, "12s Rolled": 0}}}    
+
 # Deck used for blackjack, and a dictionary to correspond values of the cards.
 main_deck = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'Jack', 'Queen', 'King', 'Ace'] * 4
 
@@ -73,7 +85,6 @@ bj_values = {'2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '7': 7, '8': 8, '9': 9, '10
 
 war_values = {'2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '7': 7, '8': 8, '9': 9, '10': 10, 'Jack': 11,
               'Queen': 12, 'King': 13, 'Ace': 14}
-
 
 class CasinoError(Exception):
     pass
@@ -94,6 +105,7 @@ class InsufficientChips(CasinoError):
 class NegativeChips(CasinoError):
     pass
 
+                      
 
 class SameSenderAndReceiver(CasinoError):
     pass
@@ -293,8 +305,7 @@ class CasinoBank:
 
         # Save changes and return updated dictionary.
         self.save_system()
-
-
+              
 class PluralDict(dict):
     """This class is used to plural strings
 
@@ -310,7 +321,21 @@ class PluralDict(dict):
             return suffix[0] if value <= 1 else suffix[1]
         raise KeyError(key)
 
-
+class GameStats: 
+    def __init__(self, bot, file_path):
+        self.gamedata = dataIO.load_json(file_path)
+        self.bot = bot
+        self.version = self.gamedata
+    def save_stats(self, path):
+        
+    def get_current_data(self)
+    
+    def get_legacy_data(self, version)
+        
+    def delete_version_stats(self, path, version):
+        
+    
+        
 class Casino:
     """Play Casino minigames and earn chips that integrate with Economy!
 
@@ -635,6 +660,7 @@ class Casino:
             dietwo = random.randint(1,6)
             result = dieone + dietwo
             outcome = self.hl_outcome(result)
+            
             await asyncio.sleep(2)
 
             # Begin game logic to determine a win or loss
@@ -925,6 +951,12 @@ class Casino:
     async def _version_casino(self, ctx):
         """Shows current Casino version"""
         await self.bot.say("You are currently running Casino version {}.".format(self.version))
+    
+    @casino.command(name="dicestats", pass_context=True)
+    @checks.admin_or_permissions(manage_server=True)
+    async def _currentversion_dicestats(self, ctx):
+        """Shows the dice results for the current version"""
+        
 
     @casino.command(name="removemembership", pass_context=True)
     @checks.admin_or_permissions(manage_server=True)
